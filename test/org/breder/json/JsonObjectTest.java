@@ -23,7 +23,7 @@ public class JsonObjectTest {
   }
 
   private String json(JsonObject put) {
-    return put.toJson();
+    return put.toString();
   }
 
 }

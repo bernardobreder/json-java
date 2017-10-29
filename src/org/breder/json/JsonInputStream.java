@@ -318,6 +318,7 @@ public class JsonInputStream {
     c = this.lookahead();
     if (c == '0') {
       sb.append((char) this.readWithSpace());
+      c = this.lookahead();
     }
     else {
       while (c >= '0' && c <= '9') {
@@ -348,7 +349,12 @@ public class JsonInputStream {
       return Integer.valueOf(sb.toString());
     }
     catch (NumberFormatException e) {
-      return Long.valueOf(sb.toString());
+      try {
+        return Long.valueOf(sb.toString());
+      }
+      catch (NumberFormatException ee) {
+        return Double.valueOf(sb.toString());
+      }
     }
   }
 
@@ -380,7 +386,7 @@ public class JsonInputStream {
         break;
       }
       else {
-        throw new SyntaxException();
+        throw new SyntaxException("" + (char) c);
       }
     }
     return map;
@@ -418,8 +424,8 @@ public class JsonInputStream {
   }
 
   /**
-   * Realiza a leitura de um caracter que não seja de espaçamento. Essa
-   * leitura considera que não está no final de arquivo.
+   * Realiza a leitura de um caracter que não seja de espaçamento. Essa leitura
+   * considera que não está no final de arquivo.
    *
    * @return leitura
    * @throws IOException
@@ -436,8 +442,8 @@ public class JsonInputStream {
   }
 
   /**
-   * Realiza a leitura de um caracter que não seja de espaçamento. Essa
-   * leitura considera que não está no final de arquivo.
+   * Realiza a leitura de um caracter que não seja de espaçamento. Essa leitura
+   * considera que não está no final de arquivo.
    *
    * @return leitura
    * @throws IOException
@@ -463,8 +469,8 @@ public class JsonInputStream {
   }
 
   /**
-   * Realiza a leitura de um caracter que não seja de espaçamento. Essa
-   * leitura considera que não está no final de arquivo.
+   * Realiza a leitura de um caracter que não seja de espaçamento. Essa leitura
+   * considera que não está no final de arquivo.
    *
    * @param safe
    * @return leitura
@@ -487,8 +493,8 @@ public class JsonInputStream {
   }
 
   /**
-   * Realiza a leitura de um caracter que não seja de espaçamento. Essa
-   * leitura considera que não está no final de arquivo.
+   * Realiza a leitura de um caracter que não seja de espaçamento. Essa leitura
+   * considera que não está no final de arquivo.
    *
    * @return leitura
    * @throws IOException
@@ -546,6 +552,15 @@ public class JsonInputStream {
      */
     public SyntaxException() {
       super();
+    }
+
+    /**
+     * Construtor
+     *
+     * @param message
+     */
+    public SyntaxException(String message) {
+      super(message);
     }
 
     /**
