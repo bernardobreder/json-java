@@ -1,6 +1,5 @@
 package org.breder.json;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
@@ -11,9 +10,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
-
 import org.junit.Test;
+
+import junit.framework.Assert;
 
 public class JsonOutputStreamTest {
 
@@ -55,37 +54,9 @@ public class JsonOutputStreamTest {
     t.c = new Teste();
     t.c.a = 3;
     t.c.b = 4;
-    Assert
-      .assertEquals(
-        "{\"class\":\"Teste\",\"a\":1,\"b\":2,\"c\":{\"class\":\"Teste\",\"a\":3,\"b\":4,\"c\":null,\"d\":null},\"d\":null}",
-        execute(t));
-  }
-
-  @Test
-  public void testClass() throws Exception {
-    Teste t = new Teste();
-    t.a = 1;
-    t.b = 2;
-    t.c = new Teste();
-    t.d = new Date();
-    t.c.a = 3;
-    t.c.b = 4;
-    String jsonString = execute(t);
-    JsonInputStream in =
-      new JsonInputStream(
-        new ByteArrayInputStream(jsonString.getBytes("utf-8")));
-    HashMap<String, Class<?>> map = new HashMap<String, Class<?>>();
-    map.put("Teste", Teste.class);
-    in.setClasses(map);
-    Teste readT = (Teste) in.readObject();
-    System.out.println(readT.d);
-    System.out.println(t.d);
-    Assert.assertEquals(t, readT);
-    in =
-      new JsonInputStream(
-        new ByteArrayInputStream(jsonString.getBytes("utf-8")));
-    in.setClasses(map);
-    Assert.assertEquals(t, readT);
+    Assert.assertEquals(
+      "{\"class\":\"Teste\",\"a\":1,\"b\":2,\"c\":{\"class\":\"Teste\",\"a\":3,\"b\":4,\"c\":null,\"d\":null},\"d\":null}",
+      execute(t));
   }
 
   protected String execute(Object value) throws EOFException, IOException,
