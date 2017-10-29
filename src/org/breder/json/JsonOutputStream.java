@@ -5,6 +5,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -18,7 +19,7 @@ import java.util.Map.Entry;
  *
  * @author Tecgraf
  */
-public class JsonOutputStream {
+public class JsonOutputStream implements AutoCloseable {
 
   /** Delega a saída */
   private final OutputStream output;
@@ -80,6 +81,10 @@ public class JsonOutputStream {
     }
     else if (object instanceof Map<?, ?>) {
       this.writeMap((Map<?, ?>) object);
+    }
+    else if (object instanceof JsonObject) {
+      JsonObject jsonObject = (JsonObject) object;
+      this.writeMap(jsonObject.map);
     }
     else {
       throw new IllegalArgumentException("class not writable: " + object
@@ -493,19 +498,31 @@ public class JsonOutputStream {
   public void writeMap(Map<?, ?> map) throws IOException {
     output.write('{');
     Entry[] entrys = map.entrySet().toArray(new Entry[map.size()]);
+    Arrays.sort(entrys, (a, b) -> a.getKey().toString().compareTo(b.getKey()
+      .toString()));
     for (int n = 0; n < entrys.length; n++) {
       Object key = entrys[n].getKey();
       Object value = entrys[n].getValue();
       if (value != null) {
         writeString(key.toString());
+        output.write(':');
+        output.write(' ');
         writeObject(value);
         if (n != entrys.length - 1) {
-          output.write(' ');
           output.write(',');
+          output.write(' ');
         }
       }
     }
     output.write('}');
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public void close() throws IOException {
+    output.close();
   }
 
 }

@@ -357,12 +357,12 @@ public class JsonInputStream {
    * @throws IOException
    * @throws SyntaxException
    */
-  protected Object readMap() throws IOException, SyntaxException {
+  protected Map<String, Object> readMap() throws IOException, SyntaxException {
     if (this.readIgnoringSpace() != '{') {
       throw new SyntaxException();
     }
     if (this.lookahead() == '}') {
-      return new HashMap<Object, Object>(0);
+      return new HashMap<String, Object>(0);
     }
     Map<String, Object> map = new HashMap<String, Object>();
     for (;;) {
