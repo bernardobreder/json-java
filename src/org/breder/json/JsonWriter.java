@@ -379,7 +379,8 @@ public class JsonWriter {
   /**
    * Escreve um enum
    *
-   * @param map @
+   * @param map
+   * @param tab
    */
   @SuppressWarnings("rawtypes")
   protected void writeMap(Map<?, ?> map, int tab) {
