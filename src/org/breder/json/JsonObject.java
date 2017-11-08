@@ -13,6 +13,7 @@ import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.breder.json.JsonInputStream.SyntaxException;
 
@@ -47,7 +48,7 @@ public class JsonObject {
   public JsonObject(String content) throws SyntaxException {
     try {
       map = new JsonInputStream(new ByteArrayInputStream(content.getBytes(
-        StandardCharsets.UTF_8))).readMap();
+        StandardCharsets.UTF_8))).readMap().map;
     }
     catch (IOException e) {
       throw new RuntimeException(e);
@@ -116,6 +117,17 @@ public class JsonObject {
     return Optional.of((List<Object>) object);
   }
 
+  public Optional<List<JsonObject>> getAsJsonList(String key) {
+    Optional<List<Object>> listOpt = getAsList(key);
+    if (!listOpt.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(listOpt.get().stream() //
+      .filter(e -> e instanceof JsonObject) //
+      .map(e -> (JsonObject) e) //
+      .collect(Collectors.toList()));
+  }
+
   public OptionalDouble getAsDouble(String key) {
     Object object = map.get(key);
     if (object instanceof Number) {
@@ -141,6 +153,15 @@ public class JsonObject {
       return OptionalInt.of(number.intValue());
     }
     return OptionalInt.empty();
+  }
+
+  public Optional<String> getAsString(String key) {
+    Object object = map.get(key);
+    if (object instanceof String) {
+      String string = (String) object;
+      return Optional.of(string);
+    }
+    return Optional.empty();
   }
 
   public Set<Entry<String, Object>> entrys() {

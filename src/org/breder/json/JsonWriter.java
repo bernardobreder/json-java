@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 /**
  * Escreve objeto no formato json
@@ -385,8 +386,24 @@ public class JsonWriter {
   @SuppressWarnings("rawtypes")
   protected void writeMap(Map<?, ?> map, int tab) {
     Entry[] entrys = map.entrySet().toArray(new Entry[map.size()]);
-    Arrays.sort(entrys, (a, b) -> a.getKey().toString().compareTo(b.getKey()
-      .toString()));
+    Function<Object, Integer> order = (a) -> {
+      if (a instanceof JsonObject || a instanceof Map<?, ?>) {
+        return 2;
+      }
+      else if (a instanceof Collection<?>) {
+        return 1;
+      }
+      else {
+        return 0;
+      }
+    };
+    Arrays.sort(entrys, (a, b) -> {
+      int cmp = order.apply(a.getValue()) - order.apply(b.getValue());
+      if (cmp != 0) {
+        return cmp;
+      }
+      return a.getKey().toString().compareTo(b.getKey().toString());
+    });
     sb.append("{");
     int entrySize = entrys.length;
     if (entrySize > 0) {
