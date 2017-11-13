@@ -3,7 +3,11 @@ package org.breder.json;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,6 +16,8 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -53,6 +59,75 @@ public class JsonObject {
     catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public boolean isEmpty() {
+    return map.isEmpty();
+  }
+
+  /**
+   * Put a value for a key
+   *
+   * @param key
+   * @param values
+   * @return this
+   */
+  public JsonObject putStringSet(String key, String... values) {
+    Set<String> set = new TreeSet<>();
+    for (String value : values) {
+      set.add(value);
+    }
+    if (set.isEmpty()) {
+      return this;
+    }
+    return putIfPresent(key, set.stream().reduce((a, b) -> a + " " + b));
+  }
+
+  /**
+   * Put a value for a key
+   *
+   * @param key
+   * @param value
+   * @return this
+   */
+  public JsonObject putIfPresent(String key, Object value) {
+    if (value == null) {
+      return this;
+    }
+    if (value instanceof Collection<?>) {
+      Collection<?> collection = (Collection<?>) value;
+      if (collection.isEmpty()) {
+        return this;
+      }
+    }
+    else if (value instanceof Map<?, ?>) {
+      Map<?, ?> map = (Map<?, ?>) value;
+      if (map.isEmpty()) {
+        return this;
+      }
+    }
+    else if (value instanceof JsonObject) {
+      JsonObject json = (JsonObject) value;
+      if (json.isEmpty()) {
+        return this;
+      }
+    }
+    else if (value instanceof Optional<?>) {
+      Optional<?> optional = (Optional<?>) value;
+      if (optional.isPresent()) {
+        return putIfPresent(key, optional.get());
+      }
+      else {
+        return this;
+      }
+    }
+    else if (value instanceof String) {
+      String string = (String) value;
+      if (string.trim().length() == 0) {
+        return this;
+      }
+    }
+    return put(key, value);
   }
 
   /**
@@ -126,6 +201,43 @@ public class JsonObject {
       .filter(e -> e instanceof JsonObject) //
       .map(e -> (JsonObject) e) //
       .collect(Collectors.toList()));
+  }
+
+  public List<JsonObject> getAsJsonList(String key,
+    Supplier<List<JsonObject>> supplier) {
+    Optional<List<Object>> listOpt = getAsList(key);
+    if (!listOpt.isPresent()) {
+      return supplier.get();
+    }
+    return listOpt.get().stream() //
+      .filter(e -> e instanceof JsonObject) //
+      .map(e -> (JsonObject) e) //
+      .collect(Collectors.toList());
+  }
+
+  public <E> List<E> getAsJsonList(String key,
+    Function<JsonObject, E> function) {
+    Optional<List<Object>> listOpt = getAsList(key);
+    if (!listOpt.isPresent()) {
+      return new ArrayList<>(0);
+    }
+    return listOpt.get().stream() //
+      .filter(e -> e instanceof JsonObject) //
+      .map(e -> (JsonObject) e) //
+      .map(function) //
+      .collect(Collectors.toList());
+  }
+
+  public Set<String> getAsStringHashSet(String key) {
+    return getAsStringSet(key).orElseGet(() -> new HashSet<>());
+  }
+
+  public Optional<Set<String>> getAsStringSet(String key) {
+    return getAsString("class") //
+      .map(e -> Arrays.<String> stream(e.split(" ")) //
+        .map(c -> c.trim()) //
+        .filter(c -> c.length() > 0) //
+        .collect(Collectors.toSet()));
   }
 
   public OptionalDouble getAsDouble(String key) {

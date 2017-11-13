@@ -1,6 +1,5 @@
 package org.breder.json;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -66,9 +65,6 @@ public class JsonWriter {
     }
     else if (object instanceof Throwable) {
       this.writeThrowable((Throwable) object, tab);
-    }
-    else if (object instanceof ArrayList<?>) {
-      this.writeArrayList((ArrayList<?>) object, tab);
     }
     else if (object instanceof Collection<?>) {
       this.writeCollection((Collection<?>) object, tab);
@@ -164,7 +160,7 @@ public class JsonWriter {
   /**
    * Escreve um Boolean
    *
-   * @param flag @
+   * @param flag
    */
   protected void writeBoolean(Boolean flag) {
     if (flag) {
@@ -178,7 +174,7 @@ public class JsonWriter {
   /**
    * Escreve um Boolean
    *
-   * @param flag @
+   * @param flag
    */
   protected void writeBoolean(boolean flag) {
     if (flag) {
@@ -192,7 +188,7 @@ public class JsonWriter {
   /**
    * Escreve um Integer
    *
-   * @param number @
+   * @param number
    */
   protected void writeInteger(Integer number) {
     sb.append(number.toString());
@@ -201,7 +197,7 @@ public class JsonWriter {
   /**
    * Escreve um int
    *
-   * @param number @
+   * @param number
    */
   protected void writeInteger(int number) {
     sb.append(Integer.toString(number));
@@ -210,7 +206,7 @@ public class JsonWriter {
   /**
    * Escreve um Long
    *
-   * @param number @
+   * @param number
    */
   protected void writeLong(Long number) {
     sb.append(number.toString());
@@ -219,7 +215,7 @@ public class JsonWriter {
   /**
    * Escreve um Long
    *
-   * @param number @
+   * @param number
    */
   protected void writeLong(long number) {
     sb.append(Long.toString(number));
@@ -228,7 +224,7 @@ public class JsonWriter {
   /**
    * Escreve um Float
    *
-   * @param number @
+   * @param number
    */
   protected void writeFloat(Float number) {
     sb.append(number.toString());
@@ -237,7 +233,7 @@ public class JsonWriter {
   /**
    * Escreve um float
    *
-   * @param number @
+   * @param number
    */
   protected void writeFloat(float number) {
     sb.append(Float.toString(number));
@@ -246,7 +242,7 @@ public class JsonWriter {
   /**
    * Escreve um Double
    *
-   * @param number @
+   * @param number
    */
   protected void writeDouble(Double number) {
     sb.append(number.toString());
@@ -255,7 +251,7 @@ public class JsonWriter {
   /**
    * Escreve um Double
    *
-   * @param number @
+   * @param number
    */
   protected void writeDouble(double number) {
     sb.append(Double.toString(number));
@@ -264,7 +260,7 @@ public class JsonWriter {
   /**
    * Escreve um número
    *
-   * @param number @
+   * @param number
    */
   protected void writeNumber(Number number) {
     sb.append(number.toString());
@@ -273,7 +269,7 @@ public class JsonWriter {
   /**
    * Escreve uma data
    *
-   * @param object @
+   * @param object
    */
   protected void writeDate(Date object) {
     Calendar c = Calendar.getInstance();
@@ -336,7 +332,8 @@ public class JsonWriter {
   /**
    * Escreve um erro
    *
-   * @param object @
+   * @param object
+   * @param tab
    */
   protected void writeThrowable(Throwable object, int tab) {
     sb.append(("{\"type\":\"exception\",\"message\":\"" + object.getMessage()
@@ -344,35 +341,28 @@ public class JsonWriter {
   }
 
   /**
-   * Escreve uma lista
-   *
-   * @param list @
-   */
-  protected void writeArrayList(ArrayList<?> list, int tab) {
-    sb.append('[');
-    int size = list.size();
-    for (int n = 0; n < size; n++) {
-      this.writeObject(list.get(n), tab);
-      if (n != size - 1) {
-        sb.append(", ");
-      }
-    }
-    sb.append(']');
-  }
-
-  /**
    * Escreve uma coleção
    *
-   * @param list @
+   * @param list
+   * @param tab
    */
   protected void writeCollection(Collection<?> list, int tab) {
-    sb.append('[');
+    sb.append("[\n");
     Iterator<?> iterator = list.iterator();
     while (iterator.hasNext()) {
-      this.writeObject(iterator.next(), tab);
-      if (iterator.hasNext()) {
-        sb.append(", ");
+      for (int i = 0; i < tab + 1; i++) {
+        sb.append('\t');
       }
+      this.writeObject(iterator.next(), tab + 1);
+      if (iterator.hasNext()) {
+        sb.append(",\n");
+      }
+      else {
+        sb.append('\n');
+      }
+    }
+    for (int i = 0; i < tab; i++) {
+      sb.append('\t');
     }
     sb.append(']');
   }
