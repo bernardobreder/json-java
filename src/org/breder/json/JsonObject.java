@@ -16,7 +16,6 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -69,24 +68,6 @@ public class JsonObject {
    * Put a value for a key
    *
    * @param key
-   * @param values
-   * @return this
-   */
-  public JsonObject putStringSet(String key, String... values) {
-    Set<String> set = new TreeSet<>();
-    for (String value : values) {
-      set.add(value);
-    }
-    if (set.isEmpty()) {
-      return this;
-    }
-    return putIfPresent(key, set.stream().reduce((a, b) -> a + " " + b));
-  }
-
-  /**
-   * Put a value for a key
-   *
-   * @param key
    * @param value
    * @return this
    */
@@ -94,11 +75,18 @@ public class JsonObject {
     if (value == null) {
       return this;
     }
-    if (value instanceof Collection<?>) {
+    else if (value instanceof Collection<?>) {
       Collection<?> collection = (Collection<?>) value;
       if (collection.isEmpty()) {
         return this;
       }
+    }
+    else if (value instanceof Object[]) {
+      Object[] objects = (Object[]) value;
+      if (objects.length == 0) {
+        return this;
+      }
+      value = Arrays.asList(objects);
     }
     else if (value instanceof Map<?, ?>) {
       Map<?, ?> map = (Map<?, ?>) value;
@@ -228,16 +216,19 @@ public class JsonObject {
       .collect(Collectors.toList());
   }
 
-  public Set<String> getAsStringHashSet(String key) {
-    return getAsStringSet(key).orElseGet(() -> new HashSet<>());
+  public Set<String> getAsListStringHashSet(String key) {
+    return getAsListStringSet(key).orElseGet(() -> new HashSet<>());
   }
 
-  public Optional<Set<String>> getAsStringSet(String key) {
-    return getAsString("class") //
-      .map(e -> Arrays.<String> stream(e.split(" ")) //
-        .map(c -> c.trim()) //
-        .filter(c -> c.length() > 0) //
-        .collect(Collectors.toSet()));
+  public Optional<Set<String>> getAsListStringSet(String key) {
+    Optional<List<Object>> listOpt = getAsList(key);
+    if (!listOpt.isPresent()) {
+      return Optional.empty();
+    }
+    return Optional.of(listOpt.get().stream() //
+      .filter(e -> e instanceof String) //
+      .map(e -> (String) e) //
+      .collect(Collectors.toSet()));
   }
 
   public OptionalDouble getAsDouble(String key) {
