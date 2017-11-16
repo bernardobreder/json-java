@@ -52,8 +52,7 @@ public class JsonObject {
    */
   public JsonObject(String content) throws SyntaxException {
     try {
-      map = new JsonInputStream(new ByteArrayInputStream(content.getBytes(
-        StandardCharsets.UTF_8))).readMap().map;
+      map = new JsonInputStream(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))).readMap().map;
     }
     catch (IOException e) {
       throw new RuntimeException(e);
@@ -62,6 +61,31 @@ public class JsonObject {
 
   public boolean isEmpty() {
     return map.isEmpty();
+  }
+
+  /**
+   * Put a value for a key
+   *
+   * @param key
+   * @param value
+   * @return this
+   */
+  public JsonObject putSplitStringIfPresent(String key, Optional<String> value) {
+    if (!value.isPresent()) {
+      return this;
+    }
+    return putSplitString(key, value.get());
+  }
+
+  /**
+   * Put a value for a key
+   *
+   * @param key
+   * @param value
+   * @return this
+   */
+  public JsonObject putSplitString(String key, String value) {
+    return put(key, Arrays.asList(value.split("\n")));
   }
 
   /**
@@ -153,6 +177,24 @@ public class JsonObject {
     return Optional.ofNullable(map.get(key));
   }
 
+  public Optional<String> getAsStringSplitted(String key) {
+    Optional<List<Object>> list = getAsList(key);
+    if (!list.isPresent()) {
+      return Optional.empty();
+    }
+    return list.get().stream() //
+      .map(e -> e.toString()) //
+      .reduce((a, b) -> a + "\n" + b);
+  }
+
+  public <E> Optional<E> getAsJsonObject(String key, Function<JsonObject, E> function) {
+    Optional<Object> objectOpt = get(key);
+    if (!objectOpt.isPresent() || objectOpt.get() instanceof JsonObject == false) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(function.apply((JsonObject) objectOpt.get()));
+  }
+
   /**
    * Get the value of the key if it is a list. If it not a list, the value
    * change to a list built by supllier.
@@ -191,8 +233,7 @@ public class JsonObject {
       .collect(Collectors.toList()));
   }
 
-  public List<JsonObject> getAsJsonList(String key,
-    Supplier<List<JsonObject>> supplier) {
+  public List<JsonObject> getAsJsonList(String key, Supplier<List<JsonObject>> supplier) {
     Optional<List<Object>> listOpt = getAsList(key);
     if (!listOpt.isPresent()) {
       return supplier.get();
@@ -203,8 +244,7 @@ public class JsonObject {
       .collect(Collectors.toList());
   }
 
-  public <E> List<E> getAsJsonList(String key,
-    Function<JsonObject, E> function) {
+  public <E> List<E> getAsJsonList(String key, Function<JsonObject, E> function) {
     Optional<List<Object>> listOpt = getAsList(key);
     if (!listOpt.isPresent()) {
       return new ArrayList<>(0);
