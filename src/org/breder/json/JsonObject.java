@@ -52,7 +52,8 @@ public class JsonObject {
    */
   public JsonObject(String content) throws SyntaxException {
     try {
-      map = new JsonInputStream(new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8))).readMap().map;
+      map = new JsonInputStream(new ByteArrayInputStream(content.getBytes(
+        StandardCharsets.UTF_8))).readMap().map;
     }
     catch (IOException e) {
       throw new RuntimeException(e);
@@ -70,7 +71,8 @@ public class JsonObject {
    * @param value
    * @return this
    */
-  public JsonObject putSplitStringIfPresent(String key, Optional<String> value) {
+  public JsonObject putSplitStringIfPresent(String key,
+    Optional<String> value) {
     if (!value.isPresent()) {
       return this;
     }
@@ -187,9 +189,11 @@ public class JsonObject {
       .reduce((a, b) -> a + "\n" + b);
   }
 
-  public <E> Optional<E> getAsJsonObject(String key, Function<JsonObject, E> function) {
+  public <E> Optional<E> getAsJsonObject(String key,
+    Function<JsonObject, E> function) {
     Optional<Object> objectOpt = get(key);
-    if (!objectOpt.isPresent() || objectOpt.get() instanceof JsonObject == false) {
+    if (!objectOpt.isPresent() || objectOpt
+      .get() instanceof JsonObject == false) {
       return Optional.empty();
     }
     return Optional.ofNullable(function.apply((JsonObject) objectOpt.get()));
@@ -233,7 +237,8 @@ public class JsonObject {
       .collect(Collectors.toList()));
   }
 
-  public List<JsonObject> getAsJsonList(String key, Supplier<List<JsonObject>> supplier) {
+  public List<JsonObject> getAsJsonList(String key,
+    Supplier<List<JsonObject>> supplier) {
     Optional<List<Object>> listOpt = getAsList(key);
     if (!listOpt.isPresent()) {
       return supplier.get();
@@ -244,7 +249,8 @@ public class JsonObject {
       .collect(Collectors.toList());
   }
 
-  public <E> List<E> getAsJsonList(String key, Function<JsonObject, E> function) {
+  public <E> List<E> getAsJsonList(String key,
+    Function<JsonObject, E> function) {
     Optional<List<Object>> listOpt = getAsList(key);
     if (!listOpt.isPresent()) {
       return new ArrayList<>(0);
@@ -309,6 +315,14 @@ public class JsonObject {
 
   public Set<Entry<String, Object>> entrys() {
     return map.entrySet();
+  }
+
+  public Set<String> keys() {
+    return map.keySet();
+  }
+
+  public Collection<Object> values() {
+    return map.values();
   }
 
   public int size() {
